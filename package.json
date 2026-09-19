@@ -1,0 +1,13 @@
+{
+  "name": "youtube-clone",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Full-stack YouTube clone (React, Node.js, PostgreSQL)",
+  "scripts": {
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "install:all": "npm --prefix client install && npm --prefix server install",
+    "test": "npm --prefix server test",
+    "lint": "npm --prefix client run lint"
+  }
+}
