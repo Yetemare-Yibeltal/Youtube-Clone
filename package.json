@@ -11,7 +11,9 @@
     "lint": "npm --prefix client run lint",
     "db:migrate": "node scripts/migrate.js up",
     "db:rollback": "node scripts/migrate.js down",
-    "db:status": "node scripts/migrate.js status"
+    "db:status": "node scripts/migrate.js status",
+    "db:tables": "node scripts/migrate.js tables",
+    "db:reset": "node scripts/migrate.js reset"
   },
   "type": "module"
 }
