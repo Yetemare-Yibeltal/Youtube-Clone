@@ -12,5 +12,6 @@
     "db:migrate": "node scripts/migrate.js up",
     "db:rollback": "node scripts/migrate.js down",
     "db:status": "node scripts/migrate.js status"
-  }
+  },
+  "type": "module"
 }
