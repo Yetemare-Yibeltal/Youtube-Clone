@@ -82,13 +82,28 @@ const status = async () => {
 
 const commands = { up, down, status };
 
+const describeError = (error) => {
+  const nested = (error.errors ?? []).map(
+    (e) => `${e.address}:${e.port} ${e.code}`,
+  );
+  const text = [error.message, error.code, ...nested]
+    .filter(Boolean)
+    .join(" | ");
+  const refused =
+    error.code === "ECONNREFUSED" ||
+    (error.errors ?? []).some((e) => e.code === "ECONNREFUSED");
+  return refused
+    ? `${text}\nPostgreSQL is not reachable. Start it and check DATABASE_URL in server/.env.`
+    : text;
+};
+
 try {
   if (!commands[command])
     throw new Error(`Unknown command "${command}". Use: up | down | status`);
   await client.connect();
   await commands[command]();
 } catch (error) {
-  console.error(`Migration failed: ${error.message}`);
+  console.error(`Migration failed: ${describeError(error)}`);
   process.exitCode = 1;
 } finally {
   await client.end().catch(() => {});
