@@ -39,6 +39,15 @@ process.on("uncaughtException", (error) => {
 });
 
 start().catch((error) => {
-  logger.error("Failed to start server", error);
+  const refused =
+    error.code === "ECONNREFUSED" ||
+    error.errors?.some((e) => e.code === "ECONNREFUSED");
+  if (refused) {
+    logger.error(
+      "Cannot reach PostgreSQL. Start the database and check DATABASE_URL in server/.env",
+    );
+  } else {
+    logger.error("Failed to start server", error);
+  }
   process.exit(1);
 });
