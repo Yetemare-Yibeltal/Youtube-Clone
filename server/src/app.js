@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import { env } from "./config/environment.js";
 import { applySecurity } from "./middleware/security.middleware.js";
+import authRoutes from "./routes/auth.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.middleware.js";
 import { notFound } from "./middleware/notFound.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
@@ -25,7 +26,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api", apiLimiter);
-
+app.use("/api/auth", authRoutes);
 // Feature routers are mounted here.
 
 app.use(notFound);
