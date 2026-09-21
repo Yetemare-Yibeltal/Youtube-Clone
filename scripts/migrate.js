@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(root, "server", ".env"), quiet: true });
 
 const migrationsDir = path.join(root, "database", "migrations");
-const FILE_PATTERN = /^(\d+_[a-z0-9_]+)\.sql$/i; // does not match *.down.sql
+const FILE_PATTERN = /^(\d+_[a-z0-9_]+)\.sql$/i;
 const [command = "up", ...flags] = process.argv.slice(2);
 
 if (!process.env.DATABASE_URL) {
@@ -32,8 +32,14 @@ const listMigrations = async () =>
     .filter(Boolean)
     .sort();
 
-// Refuses missing or empty files, so a bad paste can never be recorded as "applied".
-const readSql = async (file) => {
+const declaredTables = (sql) =>
+  [
+    ...sql.matchAll(
+      /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-z_][a-z0-9_]*)/gi,
+    ),
+  ].map((m) => m[1].toLowerCase());
+
+const readSql = async (file, { requireCreate = false } = {}) => {
   let sql;
   try {
     sql = await readFile(path.join(migrationsDir, file), "utf8");
@@ -42,13 +48,41 @@ const readSql = async (file) => {
       throw new Error(`Migration file not found: database/migrations/${file}`);
     throw error;
   }
+
   const meaningful = sql
     .replace(/--.*$/gm, "")
     .replace(/\b(BEGIN|COMMIT);/gi, "")
     .trim();
   if (!meaningful)
     throw new Error(`Migration file is empty: database/migrations/${file}`);
+
+  if (/\bBEGIN;/i.test(sql) && !/\bCOMMIT;/i.test(sql)) {
+    throw new Error(
+      `Migration file looks truncated (BEGIN without COMMIT): database/migrations/${file}`,
+    );
+  }
+  if (requireCreate && !/\bCREATE\s/i.test(meaningful)) {
+    throw new Error(
+      `database/migrations/${file} has no CREATE statement. Is a rollback script saved as the up file?`,
+    );
+  }
   return sql;
+};
+
+const verifyTables = async (name, sql) => {
+  const expected = declaredTables(sql);
+  if (expected.length === 0) return;
+
+  const { rows } = await client.query(
+    "SELECT table_name::text AS table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name::text = ANY($1::text[])",
+    [expected],
+  );
+  const found = new Set(rows.map((row) => row.table_name));
+  const missing = expected.filter((table) => !found.has(table));
+  if (missing.length > 0)
+    throw new Error(
+      `${name} ran but these tables do not exist: ${missing.join(", ")}`,
+    );
 };
 
 const getApplied = async () => {
@@ -69,14 +103,16 @@ const up = async () => {
   if (pending.length === 0)
     return console.log("Nothing to migrate. Database is up to date.");
 
-  // Validate every pending file before running any of them.
   const scripts = [];
   for (const name of pending)
-    scripts.push([name, await readSql(`${name}.sql`)]);
+    scripts.push([name, await readSql(`${name}.sql`, { requireCreate: true })]);
 
   for (const [name, sql] of scripts) {
-    console.log(`Applying ${name} ...`);
+    console.log(
+      `Applying ${name} (${Buffer.byteLength(sql)} bytes, ${declaredTables(sql).length} CREATE TABLE) ...`,
+    );
     await client.query(sql);
+    await verifyTables(name, sql);
     await client.query("INSERT INTO schema_migrations (name) VALUES ($1)", [
       name,
     ]);
@@ -113,7 +149,6 @@ const tables = async () => {
   console.log(`\n${rows.length} table(s)`);
 };
 
-// Development only: wipes everything in the database and starts clean.
 const reset = async () => {
   if (process.env.NODE_ENV === "production")
     throw new Error("Refusing to reset a production database.");
@@ -140,7 +175,7 @@ const describeError = (error) => {
     error.code === "ECONNREFUSED" ||
     (error.errors ?? []).some((e) => e.code === "ECONNREFUSED");
   return refused
-    ? `${text}\nPostgreSQL is not reachable. Start it and check DATABASE_URL in server/.env.`
+    ? `${text}\nPostgreSQL is not reachable. Check DATABASE_URL in server/.env.`
     : text;
 };
 
