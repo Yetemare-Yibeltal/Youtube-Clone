@@ -2,12 +2,17 @@ import express from "express";
 import morgan from "morgan";
 import { env } from "./config/environment.js";
 import { applySecurity } from "./middleware/security.middleware.js";
-import userRoutes from "./routes/user.routes.js";
-import channelRoutes from "./routes/channel.routes.js";
-import authRoutes from "./routes/auth.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.middleware.js";
 import { notFound } from "./middleware/notFound.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import channelRoutes from "./routes/channel.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import videoRoutes from "./routes/video.routes.js";
+import likeRoutes from "./routes/like.routes.js";
+import commentRoutes from "./routes/comment.routes.js";
+import subscriptionRoutes from "./routes/subscription.routes.js";
 
 const app = express();
 
@@ -27,11 +32,16 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.use("/api", apiLimiter);
+
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/channels", channelRoutes);
-app.use("/api", apiLimiter);
-app.use("/api/auth", authRoutes);
-// Feature routers are mounted here.
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/videos", videoRoutes);
+app.use("/api/videos", likeRoutes);
+app.use("/api/videos/:id/comments", commentRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
