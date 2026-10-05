@@ -1,64 +1,60 @@
-import { cloudinary, assertCloudinary } from "../config/cloudinary.js";
-import { env } from "../config/environment.js";
-import { ApiError } from "../utils/apiError.js";
-import { logger } from "../utils/logger.js";
+import ApiError from "../utils/apiError.js";
+import {
+  uploadBufferToCloudinary,
+  destroyCloudinaryAsset,
+} from "../config/cloudinary.js";
 
-export const createSignature = (userId) => {
-  assertCloudinary();
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
 
-  const params = {
-    timestamp: Math.round(Date.now() / 1000),
-    folder: `videos/${userId}`,
-    allowed_formats: "mp4,mov,webm,mkv",
-  };
-  const signature = cloudinary.utils.api_sign_request(
-    params,
-    env.CLOUDINARY_API_SECRET,
-  );
+export async function uploadImageAsset(file, folder = "misc") {
+  if (!file) throw ApiError.badRequest("Image file is required");
+  if (file.size > MAX_IMAGE_BYTES)
+    throw ApiError.badRequest("Image must be smaller than 5MB");
 
-  return {
-    uploadUrl: `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD_NAME}/video/upload`,
-    apiKey: env.CLOUDINARY_API_KEY,
-    signature,
-    params,
-  };
-};
-
-export const inspectVideoAsset = async (userId, publicId) => {
-  assertCloudinary();
-
-  if (!publicId.startsWith(`videos/${userId}/`)) {
-    throw ApiError.forbidden("This upload does not belong to you");
-  }
-
-  let asset;
-  try {
-    asset = await cloudinary.api.resource(publicId, { resource_type: "video" });
-  } catch (error) {
-    if (error?.error?.http_code === 404 || error?.http_code === 404) {
-      throw ApiError.badRequest("Uploaded video was not found", {
-        code: "UPLOAD_NOT_FOUND",
-      });
-    }
-    logger.error(
-      "Cloudinary lookup failed",
-      new Error(error?.error?.message ?? error?.message ?? "unknown"),
-    );
-    throw new ApiError(502, "Could not verify the upload, please try again", {
-      code: "UPLOAD_VERIFY_FAILED",
-    });
-  }
+  const result = await uploadBufferToCloudinary(file.buffer, {
+    resource_type: "image",
+    folder: `youtube-clone/${folder}`,
+  });
 
   return {
-    url: asset.secure_url,
-    durationSeconds: Math.round(asset.duration ?? 0),
-    thumbnailUrl: cloudinary.url(publicId, {
-      resource_type: "video",
-      format: "jpg",
-      secure: true,
-      transformation: [
-        { width: 640, height: 360, crop: "fill", start_offset: 1 },
-      ],
-    }),
+    url: result.secure_url,
+    publicId: result.public_id,
+    width: result.width,
+    height: result.height,
+    format: result.format,
+    bytes: result.bytes,
   };
+}
+
+export async function uploadVideoAsset(file, folder = "misc") {
+  if (!file) throw ApiError.badRequest("Video file is required");
+  if (file.size > MAX_VIDEO_BYTES)
+    throw ApiError.badRequest("Video must be smaller than 2GB");
+
+  const result = await uploadBufferToCloudinary(file.buffer, {
+    resource_type: "video",
+    folder: `youtube-clone/${folder}`,
+    chunk_size: 6 * 1024 * 1024,
+  });
+
+  return {
+    url: result.secure_url,
+    publicId: result.public_id,
+    duration: result.duration,
+    format: result.format,
+    bytes: result.bytes,
+  };
+}
+
+export async function deleteAsset(publicId, resourceType = "image") {
+  if (!publicId) throw ApiError.badRequest("publicId is required");
+  await destroyCloudinaryAsset(publicId, resourceType);
+  return true;
+}
+
+export default {
+  uploadImageAsset,
+  uploadVideoAsset,
+  deleteAsset,
 };
