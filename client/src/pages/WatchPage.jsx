@@ -12,6 +12,7 @@ import Spinner from '../components/common/Spinner'
 import SubscribeButton from '../components/channel/SubscribeButton'
 import LikeDislikeButtons from '../components/video/LikeDislikeButtons'
 import CommentSection from '../components/comment/CommentSection'
+import SaveToPlaylistMenu from '../components/playlist/SaveToPlaylistMenu'
 import VideoCard from '../components/video/VideoCard'
 import {
   formatRelativeTime,
@@ -136,6 +137,7 @@ export default function WatchPage () {
               initialLikes={video.likesCount}
               initialDislikes={video.dislikesCount}
             />
+            <SaveToPlaylistMenu videoId={video._id} />
           </div>
         </div>
 
