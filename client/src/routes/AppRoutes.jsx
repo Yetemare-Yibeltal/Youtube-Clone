@@ -2,15 +2,22 @@ import { Routes, Route } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import ProtectedRoute from './ProtectedRoute'
+import AdminRoute from './AdminRoute'
 import HomePage from '../pages/HomePage'
 import WatchPage from '../pages/WatchPage'
+import ShortsPage from '../pages/ShortsPage'
 import ChannelPage from '../pages/ChannelPage'
 import CreateChannelPage from '../pages/CreateChannelPage'
 import SearchPage from '../pages/SearchPage'
 import UploadPage from '../pages/UploadPage'
 import HistoryPage from '../pages/HistoryPage'
 import LikedVideosPage from '../pages/LikedVideosPage'
+import PlaylistsPage from '../pages/PlaylistsPage'
+import PlaylistDetailPage from '../pages/PlaylistDetailPage'
 import NotificationsPage from '../pages/NotificationsPage'
+import StudioDashboardPage from '../pages/StudioDashboardPage'
+import SettingsPage from '../pages/SettingsPage'
+import AdminDashboardPage from '../pages/AdminDashboardPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
 import NotFoundPage from '../pages/NotFoundPage'
@@ -21,8 +28,10 @@ export default function AppRoutes () {
       <Route element={<MainLayout />}>
         <Route path='/' element={<HomePage />} />
         <Route path='/explore' element={<HomePage />} />
+        <Route path='/shorts' element={<ShortsPage />} />
         <Route path='/watch/:videoId' element={<WatchPage />} />
         <Route path='/channel/:username' element={<ChannelPage />} />
+        <Route path='/playlists/:playlistId' element={<PlaylistDetailPage />} />
         <Route path='/search' element={<SearchPage />} />
 
         <Route element={<ProtectedRoute />}>
@@ -30,7 +39,14 @@ export default function AppRoutes () {
           <Route path='/upload' element={<UploadPage />} />
           <Route path='/history' element={<HistoryPage />} />
           <Route path='/liked-videos' element={<LikedVideosPage />} />
+          <Route path='/playlists' element={<PlaylistsPage />} />
           <Route path='/notifications' element={<NotificationsPage />} />
+          <Route path='/studio' element={<StudioDashboardPage />} />
+          <Route path='/settings' element={<SettingsPage />} />
+
+          <Route element={<AdminRoute />}>
+            <Route path='/admin' element={<AdminDashboardPage />} />
+          </Route>
         </Route>
       </Route>
 
