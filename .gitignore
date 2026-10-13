@@ -1,27 +1,22 @@
-# Dependencies
 node_modules/
-
-# Environment files (never commit real secrets)
-.env
-.env.*
-!.env.example
-
-# Build output
 dist/
 build/
 coverage/
 
-# Logs
-*.log
+.env
+.env.*
+!.env.example
+
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Uploads and temp files
-server/uploads/
-tmp/
-
-# Editor and OS files
-.vscode/
-.idea/
 .DS_Store
 Thumbs.db
-jar.txt
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+*.log
+*.tsbuildinfo
