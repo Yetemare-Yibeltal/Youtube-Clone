@@ -1,19 +1,32 @@
-import { pool } from "../config/database.js";
+import mongoose, { Schema } from "mongoose";
 
-export const record = async ({ videoId, userId, viewerHash }) => {
-  const { rows } = await pool.query(
-    `WITH ins AS (
-       INSERT INTO video_views (video_id, user_id, viewer_hash)
-       SELECT $1::uuid, $2::uuid, $3::text
-       WHERE NOT EXISTS (
-         SELECT 1 FROM video_views
-         WHERE video_id = $1::uuid AND viewer_hash = $3::text
-           AND created_at > now() - interval '30 minutes')
-       RETURNING 1)
-     UPDATE videos SET view_count = view_count + 1
-     WHERE id = $1::uuid AND EXISTS (SELECT 1 FROM ins)
-     RETURNING view_count`,
-    [videoId, userId, viewerHash],
-  );
-  return rows[0]?.view_count ?? null;
-};
+const videoViewSchema = new Schema(
+  {
+    video: {
+      type: Schema.Types.ObjectId,
+      ref: "Video",
+      required: true,
+      index: true,
+    },
+    viewer: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
+    sessionId: { type: String, default: "", index: true },
+    ipHash: { type: String, default: "" },
+    watchTimeSeconds: { type: Number, default: 0, min: 0 },
+    completed: { type: Boolean, default: false },
+    device: { type: String, default: "" },
+    country: { type: String, default: "" },
+  },
+  { timestamps: true },
+);
+
+videoViewSchema.index({ video: 1, createdAt: -1 });
+videoViewSchema.index({ video: 1, viewer: 1, sessionId: 1 });
+
+const VideoView = mongoose.model("VideoView", videoViewSchema);
+
+export default VideoView;
