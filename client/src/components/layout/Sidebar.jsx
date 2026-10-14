@@ -1,33 +1,23 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import {
   Clapperboard,
-  Compass,
-  History,
-  Home,
   LayoutDashboard,
-  ListVideo,
   Settings,
   ShieldCheck,
-  ThumbsUp,
   UserCircle
 } from 'lucide-react'
-import { selectIsSidebarOpen } from '../../features/ui/uiSlice'
+import { icons } from '../../assets'
+import { listMySubscriptions } from '../../api/subscription.api'
 import { selectCurrentUser } from '../../features/auth/authSlice'
+import { selectIsSidebarOpen } from '../../features/ui/uiSlice'
+import { SIDEBAR_CATEGORIES } from '../../utils/categories'
+import Avatar from '../common/Avatar'
 
-const guestLinks = [
-  { to: '/', label: 'Home', icon: Home, end: true },
-  { to: '/shorts', label: 'Shorts', icon: Clapperboard },
-  { to: '/explore', label: 'Explore', icon: Compass }
-]
+const VISIBLE_SUBSCRIPTIONS = 5
 
-const authLinks = [
-  { to: '/history', label: 'History', icon: History },
-  { to: '/playlists', label: 'Playlists', icon: ListVideo },
-  { to: '/liked-videos', label: 'Liked videos', icon: ThumbsUp }
-]
-
-function SidebarLink ({ to, label, icon: Icon, end, collapsed }) {
+function SidebarLink ({ to, label, icon: Icon, iconSrc, end, collapsed }) {
   return (
     <NavLink
       to={to}
@@ -42,16 +32,67 @@ function SidebarLink ({ to, label, icon: Icon, end, collapsed }) {
         }`
       }
     >
-      <Icon size={collapsed ? 22 : 20} />
+      {iconSrc ? (
+        <img
+          src={iconSrc}
+          alt=''
+          className={collapsed ? 'h-6 w-6' : 'h-5 w-5'}
+        />
+      ) : (
+        <Icon size={collapsed ? 22 : 20} />
+      )}
       <span>{label}</span>
     </NavLink>
   )
 }
 
+function SectionTitle ({ children, iconSrc }) {
+  return (
+    <h3 className='mb-1 flex items-center gap-2 px-3 text-xs font-semibold uppercase tracking-wide text-neutral-500'>
+      {iconSrc && <img src={iconSrc} alt='' className='h-4 w-4' />}
+      {children}
+    </h3>
+  )
+}
+
+function Divider () {
+  return <hr className='my-3 border-neutral-200 dark:border-neutral-800' />
+}
+
 export default function Sidebar () {
   const isOpen = useSelector(selectIsSidebarOpen)
   const user = useSelector(selectCurrentUser)
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const [subscriptions, setSubscriptions] = useState([])
+  const [showAllSubscriptions, setShowAllSubscriptions] = useState(false)
   const collapsed = !isOpen
+  const activeCategory =
+    location.pathname === '/' ? searchParams.get('category') : null
+
+  useEffect(() => {
+    if (!user?._id) {
+      setSubscriptions([])
+      return undefined
+    }
+
+    let isMounted = true
+
+    listMySubscriptions({ limit: 20 })
+      .then(data => {
+        if (isMounted)
+          setSubscriptions(Array.isArray(data) ? data : data?.results || [])
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
+  }, [user?._id])
+
+  const visibleSubscriptions = showAllSubscriptions
+    ? subscriptions
+    : subscriptions.slice(0, VISIBLE_SUBSCRIPTIONS)
 
   return (
     <aside
@@ -60,18 +101,49 @@ export default function Sidebar () {
       }`}
     >
       <nav className='flex flex-col gap-1'>
-        {guestLinks.map(link => (
-          <SidebarLink key={link.to} {...link} collapsed={collapsed} />
-        ))}
+        <SidebarLink
+          to='/'
+          label='Home'
+          iconSrc={icons.home}
+          end
+          collapsed={collapsed}
+        />
+        <SidebarLink
+          to='/shorts'
+          label='Shorts'
+          icon={Clapperboard}
+          collapsed={collapsed}
+        />
+        <SidebarLink
+          to='/explore'
+          label='Explore'
+          iconSrc={icons.explore}
+          collapsed={collapsed}
+        />
       </nav>
 
       {user && (
         <>
-          <hr className='my-2 border-neutral-200 dark:border-neutral-800' />
+          <Divider />
           <nav className='flex flex-col gap-1'>
-            {authLinks.map(link => (
-              <SidebarLink key={link.to} {...link} collapsed={collapsed} />
-            ))}
+            <SidebarLink
+              to='/playlists'
+              label='Library'
+              iconSrc={icons.library}
+              collapsed={collapsed}
+            />
+            <SidebarLink
+              to='/history'
+              label='History'
+              iconSrc={icons.history}
+              collapsed={collapsed}
+            />
+            <SidebarLink
+              to='/liked-videos'
+              label='Liked videos'
+              iconSrc={icons.like}
+              collapsed={collapsed}
+            />
             <SidebarLink
               to={`/channel/${user.username}`}
               label='Your channel'
@@ -79,8 +151,78 @@ export default function Sidebar () {
               collapsed={collapsed}
             />
           </nav>
+        </>
+      )}
 
-          <hr className='my-2 border-neutral-200 dark:border-neutral-800' />
+      {!collapsed && (
+        <>
+          <Divider />
+          <SectionTitle>Categories</SectionTitle>
+          <nav className='flex flex-col gap-1'>
+            {SIDEBAR_CATEGORIES.map(category => (
+              <Link
+                key={category.value}
+                to={`/?category=${category.value}`}
+                className={`flex items-center gap-4 rounded-lg px-3 py-2.5 text-sm font-medium ${
+                  activeCategory === category.value
+                    ? 'bg-neutral-200 dark:bg-neutral-800'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+              >
+                <img src={category.icon} alt='' className='h-5 w-5' />
+                {category.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
+
+      {user && !collapsed && subscriptions.length > 0 && (
+        <>
+          <Divider />
+          <SectionTitle iconSrc={icons.subscription}>
+            Subscriptions
+          </SectionTitle>
+          <nav className='flex flex-col gap-1'>
+            {visibleSubscriptions.map(channel => (
+              <Link
+                key={channel._id}
+                to={`/channel/${channel.handle}`}
+                className='flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              >
+                <Avatar
+                  src={channel.avatar?.url}
+                  name={channel.name}
+                  size={24}
+                />
+                <span className='truncate'>{channel.name}</span>
+              </Link>
+            ))}
+          </nav>
+          {subscriptions.length > VISIBLE_SUBSCRIPTIONS && (
+            <button
+              type='button'
+              onClick={() => setShowAllSubscriptions(value => !value)}
+              className='mt-1 flex w-full items-center gap-4 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            >
+              <img
+                src={icons.showMore}
+                alt=''
+                className={`h-5 w-5 transition-transform ${
+                  showAllSubscriptions ? 'rotate-180' : ''
+                }`}
+              />
+              {showAllSubscriptions
+                ? 'Show less'
+                : `Show ${subscriptions.length - VISIBLE_SUBSCRIPTIONS} more`}
+            </button>
+          )}
+        </>
+      )}
+
+      {user && (
+        <>
+          <Divider />
           <nav className='flex flex-col gap-1'>
             <SidebarLink
               to='/studio'
