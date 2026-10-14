@@ -1,3 +1,5 @@
+import { defaultAvatar } from '../../assets'
+
 function getInitials (name = '') {
   return name
     .trim()
@@ -10,11 +12,11 @@ function getInitials (name = '') {
 export default function Avatar ({ src, name, size = 40, className = '' }) {
   const dimension = `${size}px`
 
-  if (src) {
+  if (src || !name) {
     return (
       <img
-        src={src}
-        alt={name || 'avatar'}
+        src={src || defaultAvatar}
+        alt={name || 'User avatar'}
         style={{ width: dimension, height: dimension }}
         className={`rounded-full object-cover ${className}`}
       />
