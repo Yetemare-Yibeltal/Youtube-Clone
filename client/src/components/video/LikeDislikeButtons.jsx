@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { icons } from '../../assets'
 import { toggleVideoLike } from '../../api/like.api'
 import { selectIsAuthenticated } from '../../features/auth/authSlice'
 import { formatCompactNumber } from '../../utils/formatters'
@@ -46,13 +46,17 @@ export default function LikeDislikeButtons ({
         type='button'
         onClick={() => handleReaction('like')}
         disabled={isLoading}
+        aria-pressed={status === 'like'}
         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 ${
           status === 'like' ? 'text-blue-600' : ''
         }`}
       >
-        <ThumbsUp
-          size={18}
-          fill={status === 'like' ? 'currentColor' : 'none'}
+        <img
+          src={icons.like}
+          alt=''
+          className={`h-5 w-5 ${
+            status === 'like' ? 'opacity-100' : 'opacity-60'
+          }`}
         />
         {formatCompactNumber(likes)}
       </button>
@@ -61,13 +65,17 @@ export default function LikeDislikeButtons ({
         type='button'
         onClick={() => handleReaction('dislike')}
         disabled={isLoading}
+        aria-pressed={status === 'dislike'}
         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 ${
           status === 'dislike' ? 'text-blue-600' : ''
         }`}
       >
-        <ThumbsDown
-          size={18}
-          fill={status === 'dislike' ? 'currentColor' : 'none'}
+        <img
+          src={icons.dislike}
+          alt=''
+          className={`h-5 w-5 ${
+            status === 'dislike' ? 'opacity-100' : 'opacity-60'
+          }`}
         />
         {dislikes > 0 ? formatCompactNumber(dislikes) : ''}
       </button>
