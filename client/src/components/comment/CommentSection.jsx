@@ -66,7 +66,10 @@ export default function CommentSection ({ videoId, commentsCount }) {
 
   return (
     <section className='mt-6'>
-      <h2 className='mb-4 text-lg font-semibold'>{total} Comments</h2>
+  ;<h2 className='mb-4 flex items-center gap-2 text-lg font-semibold'>
+  <img src={icons.messages} alt='' className='h-5 w-5 opacity-70' />
+  {total} Comments
+</h2>
 
       <form onSubmit={handleSubmit} className='mb-6 flex items-start gap-3'>
         <Avatar
