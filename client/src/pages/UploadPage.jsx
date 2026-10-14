@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { CATEGORIES } from '../utils/categories'
+
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -231,11 +233,11 @@ export default function UploadPage () {
             >
               {CATEGORIES.map(category => (
                 <option
-                  key={category}
-                  value={category}
+                  key={category.value}
+                  value={category.value}
                   className='dark:bg-neutral-900'
                 >
-                  {category}
+                  {category.label}
                 </option>
               ))}
             </select>
