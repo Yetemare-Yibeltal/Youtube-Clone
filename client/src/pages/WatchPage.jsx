@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactPlayer from 'react-player'
+import toast from 'react-hot-toast'
+import { icons } from '../assets'
 import {
   getVideoById,
   listVideos,
@@ -21,6 +23,9 @@ import {
 } from '../utils/formatters'
 
 const PROGRESS_SAVE_DELAY_MS = 5000
+const CAN_CAST =
+  typeof HTMLMediaElement !== 'undefined' &&
+  'remote' in HTMLMediaElement.prototype
 
 export default function WatchPage () {
   const { videoId } = useParams()
@@ -30,6 +35,7 @@ export default function WatchPage () {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const viewRecordedRef = useRef(false)
   const progressTimeoutRef = useRef(null)
+  const playerRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -75,6 +81,32 @@ export default function WatchPage () {
     }, PROGRESS_SAVE_DELAY_MS)
   }
 
+  async function handleShare () {
+    const url = `${window.location.origin}/watch/${videoId}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: data?.video?.title, url })
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied to clipboard')
+    } catch (error) {
+      if (error?.name !== 'AbortError')
+        toast.error('Could not share this video')
+    }
+  }
+
+  function handleCast () {
+    const element = playerRef.current?.getInternalPlayer()
+    if (element?.remote?.prompt) {
+      element.remote
+        .prompt()
+        .catch(() => toast.error('No cast device available'))
+    } else {
+      toast.error('Casting is not supported in this browser')
+    }
+  }
+
   if (isLoading) {
     return (
       <div className='flex min-h-[60vh] items-center justify-center'>
@@ -99,6 +131,7 @@ export default function WatchPage () {
       <div className='lg:col-span-2'>
         <div className='video-player-wrapper overflow-hidden rounded-xl bg-black'>
           <ReactPlayer
+            ref={playerRef}
             url={video.videoFile?.url}
             controls
             width='100%'
@@ -125,7 +158,7 @@ export default function WatchPage () {
             </div>
           </Link>
 
-          <div className='flex items-center gap-3'>
+          <div className='flex flex-wrap items-center gap-3'>
             <SubscribeButton
               channelId={channel._id}
               isOwnChannel={isOwner}
@@ -138,6 +171,24 @@ export default function WatchPage () {
               initialDislikes={video.dislikesCount}
             />
             <SaveToPlaylistMenu videoId={video._id} />
+            <button
+              type='button'
+              onClick={handleShare}
+              className='flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700'
+            >
+              <img src={icons.share} alt='' className='h-5 w-5 opacity-70' />
+              Share
+            </button>
+            {CAN_CAST && (
+              <button
+                type='button'
+                onClick={handleCast}
+                className='flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700'
+              >
+                <img src={icons.cast} alt='' className='h-5 w-5 opacity-70' />
+                Cast
+              </button>
+            )}
           </div>
         </div>
 
@@ -157,8 +208,15 @@ export default function WatchPage () {
         <button
           type='button'
           onClick={() => setIsDescriptionExpanded(value => !value)}
-          className='mt-1 text-xs font-semibold text-neutral-600 dark:text-neutral-400'
+          className='mt-1 flex items-center gap-1 text-xs font-semibold text-neutral-600 dark:text-neutral-400'
         >
+          <img
+            src={icons.showMore}
+            alt=''
+            className={`h-4 w-4 transition-transform ${
+              isDescriptionExpanded ? 'rotate-180' : ''
+            }`}
+          />
           {isDescriptionExpanded ? 'Show less' : 'Show more'}
         </button>
 
