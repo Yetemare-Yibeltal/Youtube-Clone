@@ -47,5 +47,5 @@ export const recordVideoView = (videoId) =>
 
 export const recordWatchProgress = (videoId, progressSeconds) =>
   axiosClient
-    .post(`/videos/${videoId}/progress`, { progressSeconds })
+    .post(`/history/${videoId}`, { progressSeconds })
     .then((res) => res.data.data);
