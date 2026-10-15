@@ -5,7 +5,7 @@ const db = (client) => client ?? pool;
 
 const PUBLIC_COLUMNS =
   "id, email, display_name, avatar_url, role, email_verified_at, is_active, created_at";
-
+ 
 export const toPublicUser = (row) =>
   row && {
     id: row.id,
@@ -15,6 +15,10 @@ export const toPublicUser = (row) =>
     role: row.role,
     emailVerified: Boolean(row.email_verified_at),
     createdAt: row.created_at,
+    isWatchHistoryEnabled: {
+      type: Boolean,
+      default: true,
+    },
   };
 
 export const findById = async (id, client) => {
