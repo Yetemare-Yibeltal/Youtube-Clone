@@ -6,6 +6,8 @@ import { getUserByUsername } from '../api/user.api'
 import { getChannelVideos } from '../api/channel.api'
 import Avatar from '../components/common/Avatar'
 import Spinner from '../components/common/Spinner'
+import { getChannelByHandle, getChannelVideos } from '../api/channel.api'
+
 import SubscribeButton from '../components/channel/SubscribeButton'
 import VideoGrid from '../components/video/VideoGrid'
 import { selectCurrentUser } from '../features/auth/authSlice'
@@ -28,7 +30,8 @@ export default function ChannelPage () {
     setProfile(null)
     setActiveTab('videos')
 
-    getUserByUsername(username)
+    getChannelByHandle(username).catch(() => getUserByUsername(username))
+
       .then(data => {
         if (isMounted) setProfile(data)
       })
