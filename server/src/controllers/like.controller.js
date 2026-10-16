@@ -1,21 +1,42 @@
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/apiResponse.js";
 import * as likeService from "../services/like.service.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { sendSuccess } from "../utils/apiResponse.js";
 
-export const setReaction = asyncHandler(async (req, res) => {
-  sendSuccess(
-    res,
-    await likeService.setReaction(
-      req.user,
-      req.validated.params.id,
-      req.validated.body.type,
-    ),
+export const toggleVideoLike = asyncHandler(async (req, res) => {
+  const result = await likeService.toggleVideoLike(
+    req.user,
+    req.params.videoId,
+    req.body.type,
   );
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Reaction updated successfully"));
 });
 
-export const clearReaction = asyncHandler(async (req, res) => {
-  sendSuccess(
-    res,
-    await likeService.setReaction(req.user, req.validated.params.id, null),
+export const toggleCommentLike = asyncHandler(async (req, res) => {
+  const result = await likeService.toggleCommentLike(
+    req.user,
+    req.params.commentId,
+    req.body.type,
   );
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Reaction updated successfully"));
+});
+
+export const getVideoLikeStatus = asyncHandler(async (req, res) => {
+  const result = await likeService.getVideoLikeStatus(
+    req.user._id,
+    req.params.videoId,
+  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Reaction status fetched successfully"));
+});
+
+export const listLikedVideos = asyncHandler(async (req, res) => {
+  const result = await likeService.listLikedVideos(req.user, req.query);
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Liked videos fetched successfully"));
 });
