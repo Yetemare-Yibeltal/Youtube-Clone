@@ -10,7 +10,10 @@ const COLUMNS = `
   v.duration_seconds, v.is_short, v.status, v.visibility, v.category, v.tags, v.view_count,
   v.like_count, v.dislike_count, v.comment_count, v.published_at, v.created_at, v.channel_id,
   c.handle AS channel_handle, c.name AS channel_name, c.avatar_url AS channel_avatar,
-  to_char(v.published_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_ts`;
+  to_char(v.published_at AT TIME ZONE 'UTC','howto',
+'automobiles',
+'blogs',
+'other', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_ts`;
 
 const FROM = "FROM videos v JOIN channels c ON c.id = v.channel_id";
 const PUBLIC =
