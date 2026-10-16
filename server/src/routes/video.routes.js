@@ -1,58 +1,63 @@
 import { Router } from "express";
-import { authenticate, optionalAuth } from "../middleware/auth.middleware.js";
+import * as videoController from "../controllers/video.controller.js";
+import { requireAuth, optionalAuth } from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
 import {
-  createVideoSchema,
-  idParamSchema,
-  limitQuerySchema,
-  listQuerySchema,
-  pageQuerySchema,
-  searchQuerySchema,
+  uploadImage,
+  uploadVideoFiles,
+} from "../middleware/upload.middleware.js";
+import {
+  uploadVideoSchema,
   updateVideoSchema,
+  videoIdParamSchema,
+  listVideosSchema,
 } from "../validators/video.validator.js";
-import * as videos from "../controllers/video.controller.js";
 
 const router = Router();
 
-router.get("/", validate({ query: listQuerySchema }), videos.list);
-router.get("/trending", validate({ query: limitQuerySchema }), videos.trending);
-router.get("/search", validate({ query: searchQuerySchema }), videos.search);
-router.get(
-  "/mine",
-  authenticate,
-  validate({ query: pageQuerySchema }),
-  videos.mine,
-);
+router.get("/", validate(listVideosSchema), videoController.listVideos);
+
 router.post(
   "/",
-  authenticate,
-  validate({ body: createVideoSchema }),
-  videos.create,
+  requireAuth,
+  uploadVideoFiles.fields([
+    { name: "video", maxCount: 1 },
+    { name: "thumbnail", maxCount: 1 },
+  ]),
+  validate(uploadVideoSchema),
+  videoController.uploadVideo,
 );
 
 router.get(
-  "/:id",
+  "/:videoId",
   optionalAuth,
-  validate({ params: idParamSchema }),
-  videos.getById,
+  validate(videoIdParamSchema),
+  videoController.getVideoById,
 );
 router.patch(
-  "/:id",
-  authenticate,
-  validate({ params: idParamSchema, body: updateVideoSchema }),
-  videos.update,
+  "/:videoId",
+  requireAuth,
+  validate(updateVideoSchema),
+  videoController.updateVideo,
+);
+router.patch(
+  "/:videoId/thumbnail",
+  requireAuth,
+  uploadImage.single("thumbnail"),
+  validate(videoIdParamSchema),
+  videoController.updateVideoThumbnail,
 );
 router.delete(
-  "/:id",
-  authenticate,
-  validate({ params: idParamSchema }),
-  videos.remove,
+  "/:videoId",
+  requireAuth,
+  validate(videoIdParamSchema),
+  videoController.deleteVideo,
 );
 router.post(
-  "/:id/view",
+  "/:videoId/view",
   optionalAuth,
-  validate({ params: idParamSchema }),
-  videos.registerView,
+  validate(videoIdParamSchema),
+  videoController.recordView,
 );
 
 export default router;
