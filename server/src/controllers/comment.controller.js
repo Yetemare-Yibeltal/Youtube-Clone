@@ -1,71 +1,52 @@
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/apiResponse.js";
 import * as commentService from "../services/comment.service.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import {
-  sendCreated,
-  sendNoContent,
-  sendSuccess,
-} from "../utils/apiResponse.js";
 
-export const list = asyncHandler(async (req, res) => {
-  const { comments, nextCursor } = await commentService.list(
-    req.validated.params.id,
+export const addComment = asyncHandler(async (req, res) => {
+  const comment = await commentService.addComment(
     req.user,
-    req.validated.query,
+    req.params.videoId,
+    req.body,
   );
-  sendSuccess(res, { comments }, { meta: { nextCursor } });
+  res
+    .status(201)
+    .json(new ApiResponse(201, comment, "Comment added successfully"));
+});
+
+export const listComments = asyncHandler(async (req, res) => {
+  const result = await commentService.listComments(
+    req.params.videoId,
+    req.query,
+  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Comments fetched successfully"));
 });
 
 export const listReplies = asyncHandler(async (req, res) => {
-  const comments = await commentService.listReplies(
-    req.validated.params.id,
-    req.validated.params.commentId,
+  const result = await commentService.listReplies(
+    req.params.commentId,
+    req.query,
+  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Replies fetched successfully"));
+});
+
+export const updateComment = asyncHandler(async (req, res) => {
+  const comment = await commentService.updateComment(
+    req.params.commentId,
     req.user,
+    req.body.content,
   );
-  sendSuccess(res, { comments });
+  res
+    .status(200)
+    .json(new ApiResponse(200, comment, "Comment updated successfully"));
 });
 
-export const create = asyncHandler(async (req, res) => {
-  sendCreated(res, {
-    comment: await commentService.create(
-      req.validated.params.id,
-      req.user,
-      req.validated.body,
-    ),
-  });
-});
-
-export const update = asyncHandler(async (req, res) => {
-  const comment = await commentService.update(
-    req.user,
-    req.validated.params.commentId,
-    req.validated.body.body,
-  );
-  sendSuccess(res, { comment });
-});
-
-export const remove = asyncHandler(async (req, res) => {
-  await commentService.remove(req.user, req.validated.params.commentId);
-  sendNoContent(res);
-});
-
-export const setReaction = asyncHandler(async (req, res) => {
-  sendSuccess(
-    res,
-    await commentService.setReaction(
-      req.user,
-      req.validated.params.commentId,
-      req.validated.body.type,
-    ),
-  );
-});
-
-export const clearReaction = asyncHandler(async (req, res) => {
-  sendSuccess(
-    res,
-    await commentService.setReaction(
-      req.user,
-      req.validated.params.commentId,
-      null,
-    ),
-  );
+export const deleteComment = asyncHandler(async (req, res) => {
+  await commentService.deleteComment(req.params.commentId, req.user);
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Comment deleted successfully"));
 });
