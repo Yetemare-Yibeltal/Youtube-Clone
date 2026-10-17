@@ -1,11 +1,12 @@
-import { Outlet } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import Header from '../components/layout/Header'
-import Sidebar from '../components/layout/Sidebar'
-import { selectIsSidebarOpen } from '../features/ui/uiSlice'
+import { Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Header from '../components/layout/Header';
+import Sidebar from '../components/layout/Sidebar';
+import VerifyEmailBanner from '../components/layout/VerifyEmailBanner';
+import { selectIsSidebarOpen } from '../features/ui/uiSlice';
 
 export default function MainLayout () {
-  const isSidebarOpen = useSelector(selectIsSidebarOpen)
+  const isSidebarOpen = useSelector(selectIsSidebarOpen);
 
   return (
     <div className='min-h-screen bg-surface-light dark:bg-surface-dark'>
@@ -17,9 +18,10 @@ export default function MainLayout () {
         }`}
       >
         <div className='p-4 sm:p-6'>
+          <VerifyEmailBanner />
           <Outlet />
         </div>
       </main>
     </div>
-  )
+  );
 }
