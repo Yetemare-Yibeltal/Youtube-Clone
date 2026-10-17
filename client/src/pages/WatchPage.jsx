@@ -15,41 +15,58 @@ import VideoCard from '../components/video/VideoCard';
 import { formatRelativeTime, formatSubscriberCount, formatViewCount } from '../utils/formatters';
 
 const PROGRESS_SAVE_DELAY_MS = 5000;
+
 const CAN_CAST = typeof HTMLMediaElement !== 'undefined' && 'remote' in HTMLMediaElement.prototype;
 
 export default function WatchPage () {
   const { videoId } = useParams();
+
   const [data, setData] = useState(null);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
   const viewRecordedRef = useRef(false);
   const progressTimeoutRef = useRef(null);
   const playerRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
+
     setIsLoading(true);
     setData(null);
+    setRelatedVideos([]);
     setIsDescriptionExpanded(false);
     viewRecordedRef.current = false;
 
     getVideoById(videoId)
       .then((result) => {
-        if (isMounted) setData(result);
+        if (isMounted) {
+          setData(result);
+        }
       })
       .catch(() => {
-        if (isMounted) setData(null);
+        if (isMounted) {
+          setData(null);
+        }
       })
       .finally(() => {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       });
 
     getRelatedVideos(videoId, { limit: 12 })
       .then((result) => {
-        if (isMounted) setRelatedVideos(result.results);
+        if (isMounted) {
+          setRelatedVideos(result.results ?? []);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) {
+          setRelatedVideos([]);
+        }
+      });
 
     return () => {
       isMounted = false;
@@ -59,12 +76,15 @@ export default function WatchPage () {
 
   function handlePlayStart () {
     if (viewRecordedRef.current) return;
+
     viewRecordedRef.current = true;
+
     recordVideoView(videoId).catch(() => {});
   }
 
   function handleProgress ({ playedSeconds }) {
     clearTimeout(progressTimeoutRef.current);
+
     progressTimeoutRef.current = setTimeout(() => {
       recordWatchProgress(videoId, Math.floor(playedSeconds)).catch(() => {});
     }, PROGRESS_SAVE_DELAY_MS);
@@ -72,22 +92,32 @@ export default function WatchPage () {
 
   async function handleShare () {
     const url = `${window.location.origin}/watch/${videoId}`;
+
     try {
       if (navigator.share) {
-        await navigator.share({ title: data?.video?.title, url });
+        await navigator.share({
+          title: data?.video?.title,
+          url,
+        });
         return;
       }
+
       await navigator.clipboard.writeText(url);
       toast.success('Link copied to clipboard');
     } catch (error) {
-      if (error?.name !== 'AbortError') toast.error('Could not share this video');
+      if (error?.name !== 'AbortError') {
+        toast.error('Could not share this video');
+      }
     }
   }
 
   function handleCast () {
     const element = playerRef.current?.getInternalPlayer();
+
     if (element?.remote?.prompt) {
-      element.remote.prompt().catch(() => toast.error('No cast device available'));
+      element.remote.prompt().catch(() => {
+        toast.error('No cast device available');
+      });
     } else {
       toast.error('Casting is not supported in this browser');
     }
@@ -101,16 +131,18 @@ export default function WatchPage () {
     );
   }
 
-  if (!data) {
+  if (!data?.video) {
     return <p className='py-20 text-center text-neutral-500'>This video is unavailable.</p>;
   }
 
   const { video, isOwner, isSubscribed, viewerLikeStatus } = data;
+
   const channel = video.channel || {};
 
   return (
     <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
       <div className='lg:col-span-2'>
+        {/* Video player */}
         <div className='video-player-wrapper overflow-hidden rounded-xl bg-black'>
           <ReactPlayer
             ref={playerRef}
@@ -120,30 +152,44 @@ export default function WatchPage () {
             height='100%'
             onStart={handlePlayStart}
             onProgress={handleProgress}
-            config={{ file: { attributes: { poster: video.thumbnail?.url } } }}
+            config={{
+              file: {
+                attributes: {
+                  poster: video.thumbnail?.url,
+                },
+              },
+            }}
           />
         </div>
 
+        {/* Video title */}
         <h1 className='mt-4 text-xl font-semibold'>{video.title}</h1>
 
+        {/* Channel and video actions */}
         <div className='mt-3 flex flex-wrap items-center justify-between gap-3'>
           <Link to={`/channel/${channel.handle}`} className='flex items-center gap-3'>
             <Avatar src={channel.avatar?.url} name={channel.name} size={44} />
+
             <div>
               <p className='text-sm font-semibold'>{channel.name}</p>
+
               <p className='text-xs text-neutral-500'>{formatSubscriberCount(channel.subscribersCount)}</p>
             </div>
           </Link>
 
           <div className='flex flex-wrap items-center gap-3'>
             <SubscribeButton channelId={channel._id} isOwnChannel={isOwner} initialSubscribed={isSubscribed} />
+
             <LikeDislikeButtons
               videoId={video._id}
               initialStatus={viewerLikeStatus ?? null}
               initialLikes={video.likesCount}
               initialDislikes={video.dislikesCount}
             />
+
             <SaveToPlaylistMenu videoId={video._id} />
+
+            {/* Share button */}
             <button
               type='button'
               onClick={handleShare}
@@ -152,6 +198,8 @@ export default function WatchPage () {
               <img src={icons.share} alt='' className='h-5 w-5 opacity-70' />
               Share
             </button>
+
+            {/* Cast button */}
             {CAN_CAST && (
               <button
                 type='button'
@@ -165,6 +213,7 @@ export default function WatchPage () {
           </div>
         </div>
 
+        {/* Video description */}
         <div
           className={`mt-4 rounded-xl bg-neutral-100 p-3 text-sm dark:bg-neutral-800 ${
             isDescriptionExpanded ? '' : 'line-clamp-3'
@@ -173,8 +222,11 @@ export default function WatchPage () {
           <p className='mb-1 font-semibold text-neutral-700 dark:text-neutral-300'>
             {formatViewCount(video.views)} &middot; {formatRelativeTime(video.publishedAt)}
           </p>
+
           <p className='whitespace-pre-wrap'>{video.description || 'No description provided.'}</p>
         </div>
+
+        {/* Expand or collapse description */}
         <button
           type='button'
           onClick={() => setIsDescriptionExpanded((value) => !value)}
@@ -185,12 +237,15 @@ export default function WatchPage () {
             alt=''
             className={`h-4 w-4 transition-transform ${isDescriptionExpanded ? 'rotate-180' : ''}`}
           />
+
           {isDescriptionExpanded ? 'Show less' : 'Show more'}
         </button>
 
+        {/* Comments */}
         <CommentSection videoId={video._id} commentsCount={video.commentsCount} />
       </div>
 
+      {/* Related videos */}
       <aside className='flex flex-col gap-4'>
         {relatedVideos.map((related) => (
           <VideoCard key={related._id} video={related} />

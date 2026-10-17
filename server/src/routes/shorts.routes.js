@@ -20,5 +20,4 @@ router.get(
   validate({ params: z.object({ videoId: objectId }) }),
   shortsController.getShortById,
 );
-
 export default router;

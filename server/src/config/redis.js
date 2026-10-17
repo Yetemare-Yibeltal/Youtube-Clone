@@ -1,6 +1,6 @@
-import Redis from "ioredis";
-import env from "./environment.js";
-import logger from "../utils/logger.js";
+import Redis from 'ioredis';
+import env from './environment.js';
+import logger from '../utils/logger.js';
 
 let redisClient;
 
@@ -14,8 +14,8 @@ function createRedisClient() {
     },
   });
 
-  client.on("connect", () => logger.info("Redis connected"));
-  client.on("error", (err) => logger.error(`Redis error: ${err.message}`));
+  client.on('connect', () => logger.info('Redis connected'));
+  client.on('error', (err) => logger.error(`Redis error: ${err.message}`));
 
   return client;
 }
