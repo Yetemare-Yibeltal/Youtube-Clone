@@ -1,32 +1,29 @@
-import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import toast from 'react-hot-toast'
-import {
-  register as registerUser,
-  selectAuthStatus
-} from '../features/auth/authSlice'
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import { register as registerUser, selectAuthStatus } from '../features/auth/authSlice';
 
 export default function RegisterPage () {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const status = useSelector(selectAuthStatus)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const status = useSelector(selectAuthStatus);
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors }
-  } = useForm()
+    formState: { errors },
+  } = useForm();
 
-  const password = watch('password')
+  const password = watch('password');
 
   async function onSubmit (values) {
-    const result = await dispatch(registerUser(values))
+    const result = await dispatch(registerUser(values));
     if (registerUser.fulfilled.match(result)) {
-      toast.success('Account created. You can now sign in.')
-      navigate('/login')
+      toast.success('Account created. You can now sign in.');
+      navigate('/login');
     } else {
-      toast.error(result.payload || 'Registration failed')
+      toast.error(result.payload || 'Registration failed');
     }
   }
 
@@ -44,11 +41,7 @@ export default function RegisterPage () {
             {...register('fullName', { required: 'Full name is required' })}
             className='w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-blue-500 dark:border-neutral-700'
           />
-          {errors.fullName && (
-            <p className='mt-1 text-xs text-red-500'>
-              {errors.fullName.message}
-            </p>
-          )}
+          {errors.fullName && <p className='mt-1 text-xs text-red-500'>{errors.fullName.message}</p>}
         </div>
 
         <div>
@@ -63,16 +56,17 @@ export default function RegisterPage () {
               minLength: { value: 3, message: 'At least 3 characters' },
               pattern: {
                 value: /^[a-z0-9._]+$/i,
-                message: 'Letters, numbers, dots and underscores only'
-              }
+                message: 'Letters, numbers, dots and underscores only',
+              },
+              validate: {
+                lowercase: (value) => /[a-z]/.test(value) || 'Include a lowercase letter',
+                uppercase: (value) => /[A-Z]/.test(value) || 'Include an uppercase letter',
+                number: (value) => /[0-9]/.test(value) || 'Include a number',
+              },
             })}
             className='w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-blue-500 dark:border-neutral-700'
           />
-          {errors.username && (
-            <p className='mt-1 text-xs text-red-500'>
-              {errors.username.message}
-            </p>
-          )}
+          {errors.username && <p className='mt-1 text-xs text-red-500'>{errors.username.message}</p>}
         </div>
 
         <div>
@@ -85,9 +79,7 @@ export default function RegisterPage () {
             {...register('email', { required: 'Email is required' })}
             className='w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-blue-500 dark:border-neutral-700'
           />
-          {errors.email && (
-            <p className='mt-1 text-xs text-red-500'>{errors.email.message}</p>
-          )}
+          {errors.email && <p className='mt-1 text-xs text-red-500'>{errors.email.message}</p>}
         </div>
 
         <div>
@@ -99,22 +91,15 @@ export default function RegisterPage () {
             type='password'
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 8, message: 'At least 8 characters' }
+              minLength: { value: 8, message: 'At least 8 characters' },
             })}
             className='w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-blue-500 dark:border-neutral-700'
           />
-          {errors.password && (
-            <p className='mt-1 text-xs text-red-500'>
-              {errors.password.message}
-            </p>
-          )}
+          {errors.password && <p className='mt-1 text-xs text-red-500'>{errors.password.message}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor='confirmPassword'
-            className='mb-1 block text-sm font-medium'
-          >
+          <label htmlFor='confirmPassword' className='mb-1 block text-sm font-medium'>
             Confirm password
           </label>
           <input
@@ -122,15 +107,11 @@ export default function RegisterPage () {
             type='password'
             {...register('confirmPassword', {
               required: 'Please confirm your password',
-              validate: value => value === password || 'Passwords do not match'
+              validate: (value) => value === password || 'Passwords do not match',
             })}
             className='w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 outline-none focus:border-blue-500 dark:border-neutral-700'
           />
-          {errors.confirmPassword && (
-            <p className='mt-1 text-xs text-red-500'>
-              {errors.confirmPassword.message}
-            </p>
-          )}
+          {errors.confirmPassword && <p className='mt-1 text-xs text-red-500'>{errors.confirmPassword.message}</p>}
         </div>
 
         <button
@@ -149,5 +130,5 @@ export default function RegisterPage () {
         </Link>
       </p>
     </div>
-  )
+  );
 }
