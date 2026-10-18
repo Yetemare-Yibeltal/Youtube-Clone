@@ -56,3 +56,12 @@ Report statuses are `pending`, `reviewing`, `resolved` and `dismissed`. Reviewin
 - Give a reason whenever you ban a user.
 - Keep the number of admin accounts small.
 - Do not use the seeded demo accounts as admins in production.
+## Reports and verification
+
+The **Reports** tab lists reports by status (pending, reviewing, resolved, dismissed). Each row links to the reported video, comment, channel or user. **Review** marks a report as being looked at, **Resolve** closes it after action was taken, and **Dismiss** closes it with no action. Each action asks for an optional note that is saved with the report and written to the audit log.
+
+On any channel page, admins see **Verify channel** or **Remove badge** to toggle the verified badge.
+
+Deleting a comment is still done through the API:
+
+`DELETE /api/v1/admin/comments/:commentId`

@@ -51,3 +51,12 @@ Never commit `.env` files. Rotate `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` and 
 ## Reporting a vulnerability
 
 Please report security issues privately to the repository owner instead of opening a public issue, and include steps to reproduce.
+## Reports and verification
+
+The **Reports** tab lists reports by status (pending, reviewing, resolved, dismissed). Each row links to the reported video, comment, channel or user. **Review** marks a report as being looked at, **Resolve** closes it after action was taken, and **Dismiss** closes it with no action. Each action asks for an optional note that is saved with the report and written to the audit log.
+
+On any channel page, admins see **Verify channel** or **Remove badge** to toggle the verified badge.
+
+Deleting a comment is still done through the API:
+
+`DELETE /api/v1/admin/comments/:commentId`
