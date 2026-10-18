@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import Avatar from '../common/Avatar'
+import ReportButton from '../report/ReportButton';
 import { formatRelativeTime } from '../../utils/formatters'
 import {
   addComment,
@@ -128,6 +129,16 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
           <button type='button' onClick={() => setIsReplying(value => !value)}>
             Reply
           </button>
+{
+  !isOwner && (
+    <ReportButton
+      targetType='comment'
+      targetId={comment._id}
+      label='Report'
+      className='flex items-center gap-1 hover:text-neutral-800 dark:hover:text-neutral-200'
+    />
+  )};
+
           {isOwner && !isEditing && (
             <>
               <button type='button' onClick={() => setIsEditing(true)}>
