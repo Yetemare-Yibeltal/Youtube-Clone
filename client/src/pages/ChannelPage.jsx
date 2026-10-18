@@ -9,6 +9,8 @@ import Spinner from '../components/common/Spinner'
 import { getChannelByHandle, getChannelVideos } from '../api/channel.api'
 
 import SubscribeButton from '../components/channel/SubscribeButton'
+import ChannelModerationActions from '../components/channel/ChannelModerationActions';
+
 import VideoGrid from '../components/video/VideoGrid'
 import { selectCurrentUser } from '../features/auth/authSlice'
 import { formatSubscriberCount } from '../utils/formatters'
@@ -159,6 +161,14 @@ export default function ChannelPage () {
           isOwnChannel={isOwnProfile}
           initialSubscribed={isSubscribed}
         />
+        <ChannelModerationActions
+  channel={channel}
+  isOwnProfile={isOwnProfile}
+  onVerifiedChange={(isVerified) =>
+    setProfile((previous) => ({ ...previous, channel: { ...previous.channel, isVerified } }))
+  }
+/>;
+
       </div>
 
       <div
