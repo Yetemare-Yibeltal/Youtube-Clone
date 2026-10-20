@@ -182,21 +182,7 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
           </button>
         )}
 
-        {showReplies && (
-          <div className='mt-3 flex flex-col gap-4'>
-            {replies.map(reply => (
-              <CommentItem
-                key={reply._id}
-                comment={reply}
-                videoId={videoId}
-                onDeleted={id => {
-                  setReplies(prev => prev.filter(item => item._id !== id))
-                  setRepliesCount(count => Math.max(0, count - 1))
-                }}
-              />
-            ))}
-          </div>
-        )}
+
       </div>
     </div>
   )
