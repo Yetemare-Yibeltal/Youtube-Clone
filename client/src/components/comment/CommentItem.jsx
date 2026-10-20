@@ -156,12 +156,7 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
             onSubmit={handleReplySubmit}
             className='mt-2 flex items-start gap-2'
           >
-            <input
-              value={replyText}
-              onChange={event => setReplyText(event.target.value)}
-              placeholder='Add a reply...'
-              className='w-full border-b border-neutral-300 bg-transparent py-1 text-sm outline-none dark:border-neutral-700'
-            />
+           
             <button
               type='submit'
               className='shrink-0 rounded-full bg-neutral-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-neutral-900'
