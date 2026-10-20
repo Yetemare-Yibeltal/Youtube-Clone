@@ -40,7 +40,22 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
     setShowReplies(value => !value)
   }
 
-  
+  async function handleReplySubmit (event) {
+    event.preventDefault()
+    if (!replyText.trim()) return
+
+    try {
+      const newReply = await addComment(videoId, replyText.trim(), comment._id)
+      setReplies(prev => [newReply, ...prev])
+      setRepliesCount(count => count + 1)
+      setRepliesLoaded(true)
+      setShowReplies(true)
+      setReplyText('')
+      setIsReplying(false)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Could not post reply')
+    }
+  }
 
   async function handleUpdate (event) {
     event.preventDefault()
