@@ -162,12 +162,7 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
               placeholder='Add a reply...'
               className='w-full border-b border-neutral-300 bg-transparent py-1 text-sm outline-none dark:border-neutral-700'
             />
-            <button
-              type='submit'
-              className='shrink-0 rounded-full bg-neutral-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-neutral-900'
-            >
-              Reply
-            </button>
+            
           </form>
         )}
 
