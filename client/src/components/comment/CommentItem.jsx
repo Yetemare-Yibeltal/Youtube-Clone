@@ -112,13 +112,7 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
               >
                 Save
               </button>
-              <button
-                type='button'
-                onClick={() => setIsEditing(false)}
-                className='rounded-full px-3 py-1 text-xs'
-              >
-                Cancel
-              </button>
+
             </div>
           </form>
         ) : (
