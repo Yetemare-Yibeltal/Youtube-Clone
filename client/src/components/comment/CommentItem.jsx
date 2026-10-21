@@ -106,7 +106,12 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
               className='w-full resize-none rounded-md border border-neutral-300 bg-transparent p-2 text-sm outline-none dark:border-neutral-700'
             />
             <div className='mt-1 flex gap-2'>
-              
+              <button
+                type='submit'
+                className='rounded-full bg-neutral-900 px-3 py-1 text-xs text-white dark:bg-white dark:text-neutral-900'
+              >
+                Save
+              </button>
               <button
                 type='button'
                 onClick={() => setIsEditing(false)}
