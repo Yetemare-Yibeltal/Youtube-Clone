@@ -122,8 +122,8 @@ export default function CommentItem ({ comment, videoId, onDeleted }) {
             </div>
           </form>
         ) : (
-          
-        
+          <p className='mt-1 whitespace-pre-wrap text-sm'>{content}</p>
+        )}
 
         <div className='mt-1 flex items-center gap-4 text-xs font-medium text-neutral-500'>
           <button type='button' onClick={() => setIsReplying(value => !value)}>
