@@ -101,7 +101,14 @@ export default function Header () {
   return (
     <header className='fixed top-0 z-40 flex h-14 w-full items-center justify-between gap-4 border-b border-neutral-200 bg-surface-light px-4 dark:border-neutral-800 dark:bg-surface-dark'>
       <div className='flex items-center gap-3'>
-        
+        <button
+          type='button'
+          onClick={() => dispatch(toggleSidebar())}
+          aria-label='Toggle sidebar'
+          className={iconButtonClass}
+        >
+          <img src={icons.menu} alt='' className='h-5 w-auto' />
+        </button>
         <Link to='/' aria-label='VidTube home' className='flex items-center'>
           <img
             src={logo}
