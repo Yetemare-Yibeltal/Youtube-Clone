@@ -69,10 +69,7 @@ export default function Sidebar () {
       })
       .catch(() => {});
 
-    return () => {
-      isMounted = false;
-    };
-  }, [user?._id]);
+   
 
   const visibleSubscriptions = showAllSubscriptions ? subscriptions : subscriptions.slice(0, VISIBLE_SUBSCRIPTIONS);
 
