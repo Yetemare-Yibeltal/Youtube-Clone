@@ -49,6 +49,17 @@ export default function SubscribeButton ({
   }
 
   return (
-
+    <button
+      type='button'
+      onClick={handleClick}
+      disabled={isLoading}
+      className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+        isSubscribed
+          ? 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300 dark:bg-neutral-700 dark:text-neutral-50 dark:hover:bg-neutral-600'
+          : 'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200'
+      }`}
+    >
+      {isSubscribed ? 'Subscribed' : 'Subscribe'}
+    </button>
   )
 }
