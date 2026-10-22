@@ -11,19 +11,7 @@ export default function ChannelModerationActions ({ channel, isOwnProfile, onVer
   const [isUpdating, setIsUpdating] = useState(false);
   const isAdmin = currentUser?.role === 'admin';
 
-  async function handleToggleVerification () {
-    const nextValue = !channel.isVerified;
-    setIsUpdating(true);
-    try {
-      await setChannelVerification(channel._id, nextValue);
-      onVerifiedChange(nextValue);
-      toast.success(nextValue ? 'Channel verified' : 'Verification removed');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Could not update verification');
-    } finally {
-      setIsUpdating(false);
-    }
-  }
+ 
 
   return (
     <div className='flex flex-wrap items-center gap-2'>
